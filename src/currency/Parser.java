@@ -61,7 +61,7 @@ public class Parser {
                 }
             tokType = FUNCTION;
         }
-        else if (Character.isDigit(exp.charAt(explds))){
+        else if (Character.isDigit(exp.charAt(explds)) || (exp.charAt(explds)=='$')){
             while(!isDelim(exp.charAt(explds))){
                 token += exp.charAt(explds);
                 explds++;
@@ -160,13 +160,12 @@ public class Parser {
     //  Выполнить возведение в степень
     private double evalExp4() throws ParserException {
         
-        double result;
+        double result=0.0;
         double partialResult;
         double ex;
         int t;
         String funcName = new String(token);
         
-        result = evalExp5();
         /*        if(token.equals("^")){
             getToken();
             partialResult = evalExp4();
@@ -179,11 +178,21 @@ public class Parser {
         }*/
         if(tokType == FUNCTION) {
             getToken();
+            partialResult = evalExp6();
             switch(funcName) {
-            	case: default
-            
+            	case "toDollar":
+            		System.out.println("Ok! " + funcName + "(" + partialResult + ")");
+            		return result;
+            	case "toEuro":
+            		System.out.println("Ok! " + funcName + "(" + partialResult + ")");
+            		return result;
+            	default:
+            		System.out.println("Error! " + funcName + "(" + partialResult + ") -- " + token);
+            		return result;
             }
         }
+        result = evalExp5();
+
         return result;
     }
  
@@ -225,10 +234,23 @@ public class Parser {
     private double atom()   throws ParserException {
         
         double result = 0.0;
+        String buffer;
+        
+    	if(token.charAt(0) == '$') {
+    		System.out.println("Dollars found!");
+    		buffer = token.substring(1);
+    	}
+    	else if(token.endsWith("eur")) {
+    		System.out.println("Euros found!");
+    		buffer = token.substring(0, token.length()-3);
+    	} else {
+    		buffer = token;
+    	}
+    	
         switch(tokType){
             case NUMBER:
                 try{
-                    result = Double.parseDouble(token);
+                    result = Double.parseDouble(buffer);
                 }
                 catch(NumberFormatException exc){
                     handleErr(SYNTAXERROR);

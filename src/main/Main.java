@@ -22,7 +22,8 @@ public class Main {
 			try {
 				System.out.println("Result: " + p.evaluate(expr) + "\n");
 			}
-				catch (ParserException ex) {
+			catch (ParserException ex) {
+				System.out.println(ex.getMessage());
 			}
 		}
 	}
