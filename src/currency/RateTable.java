@@ -33,4 +33,6 @@ public class RateTable {
 		
 		return this;
 	}
+	
+// TODO	Implement a reLoadTable(File) method.  	
 }

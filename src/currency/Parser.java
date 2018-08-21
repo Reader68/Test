@@ -83,9 +83,9 @@ public class Parser {
     }
  
     //  Точка входа анализатора
-    public double evaluate(String expstr) throws ParserException {
+    public Currency evaluate(String expstr) throws ParserException, CurrencyException {
         
-        double result;
+        Currency result;
         
         exp = expstr;
         explds = 0;
@@ -104,53 +104,22 @@ public class Parser {
     }
     
     //  Сложить или вычислить два терма
-    private double evalExp2() throws ParserException {
+    private Currency evalExp2() throws ParserException, CurrencyException {
         
         char op;
-        double result;
-        double partialResult;
-        result = evalExp3();
+        Currency result;
+        Currency partialResult;
+        result = evalExp4();
         while((op = token.charAt(0)) == '+' || 
                 op == '-'){
             getToken();
-            partialResult = evalExp3();
-            switch(op){
-                case '-':
-                    result -= partialResult;
-                    break;
-                case '+':
-                    result += partialResult;
-                    break;
-            }
-        }
-        return result;
-    }
-    
-    //  Умножить или разделить два фактора
-    private double evalExp3() throws ParserException {
-        
-        char op;
-        double result;
-        double partialResult;
-        
-        result = evalExp4();
-        while((op = token.charAt(0)) == '*' || 
-                op == '/' | op == '%'){
-            getToken();
             partialResult = evalExp4();
             switch(op){
-                case '*':
-                    result *= partialResult;
+                case '-':
+                	result = CurrencyUtils.Subtract(result, partialResult);
                     break;
-                case '/':
-                    if(partialResult == 0.0)
-                        handleErr(DIVBYZERO);
-                    result /= partialResult;
-                    break;
-                case '%':
-                    if(partialResult == 0.0)
-                        handleErr(DIVBYZERO);
-                    result %= partialResult;
+                case '+':
+                	result = CurrencyUtils.Add(result, partialResult);
                     break;
             }
         }
@@ -158,37 +127,24 @@ public class Parser {
     }
     
     //  Выполнить возведение в степень
-    private double evalExp4() throws ParserException {
+    private Currency evalExp4() throws ParserException, CurrencyException {
         
-        double result=0.0;
-        double partialResult;
-        double ex;
-        int t;
+    	Currency result;
+    	Currency partialResult;
         String funcName = new String(token);
         
-        /*        if(token.equals("^")){
-            getToken();
-            partialResult = evalExp4();
-            ex = result;
-            if(partialResult == 0.0){
-                result = 1.0;
-            }else 
-                for(t = (int)partialResult - 1; t >  0; t--)
-                    result *= ex;
-        }*/
         if(tokType == FUNCTION) {
             getToken();
             partialResult = evalExp6();
             switch(funcName) {
             	case "toDollar":
             		System.out.println("Ok! " + funcName + "(" + partialResult + ")");
-            		return result;
+            		return CurrencyUtils.convert(partialResult, "$");
             	case "toEuro":
             		System.out.println("Ok! " + funcName + "(" + partialResult + ")");
-            		return result;
+            		return CurrencyUtils.convert(partialResult, "eur");
             	default:
-            		System.out.println("Error! " + funcName + "(" + partialResult + ") -- " + token);
-            		return result;
+            		handleErr(SYNTAXERROR);
             }
         }
         result = evalExp5();
@@ -197,8 +153,8 @@ public class Parser {
     }
  
     //  Определить унарные + или -
-    private double evalExp5() throws ParserException {
-        double result;
+    private Currency evalExp5() throws ParserException, CurrencyException {
+    	Currency result;
         
         String op;
         op = " ";
@@ -210,13 +166,14 @@ public class Parser {
         }
         result = evalExp6();
         if(op.equals("-"))
-            result =  -result;
+        	result.setValue(-result.getValue());
+
         return result;
     }
     
     //  Обработать выражение в скобках
-    private double evalExp6() throws ParserException {
-        double result;
+    private Currency evalExp6() throws ParserException, CurrencyException {
+    	Currency result;
         
         if(token.equals("(")){
             getToken();
@@ -231,30 +188,34 @@ public class Parser {
     }
     
     //  Получить значение числа
-    private double atom()   throws ParserException {
+    private Currency atom()   throws ParserException, CurrencyException {
         
-        double result = 0.0;
+    	Currency result = null;
         String buffer;
         
-    	if(token.charAt(0) == '$') {
-    		System.out.println("Dollars found!");
-    		buffer = token.substring(1);
-    	}
-    	else if(token.endsWith("eur")) {
-    		System.out.println("Euros found!");
-    		buffer = token.substring(0, token.length()-3);
-    	} else {
-    		buffer = token;
-    	}
     	
         switch(tokType){
             case NUMBER:
                 try{
-                    result = Double.parseDouble(buffer);
+                	String ctype; 
+                	if(token.charAt(0) == '$') {
+                		ctype = token.substring(0, 1);
+                		buffer = token.substring(1);
+                	}
+                	else {
+                		ctype = token.substring(token.length()-3);
+                		buffer = token.substring(0, token.length()-3);
+                	}
+                	
+              		Currency.checkType(ctype);
+               		result = new Currency(ctype, Double.parseDouble(buffer));
                 }
                 catch(NumberFormatException exc){
                     handleErr(SYNTAXERROR);
-                }
+                } 
+                catch (CurrencyException exc) {
+                	throw new ParserException(exc.toString());
+				}
                 getToken();
     
             break;
