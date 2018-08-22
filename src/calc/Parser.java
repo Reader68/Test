@@ -6,25 +6,22 @@ public class Parser {
 	
 	protected Logger logger  = new Logger( this.getClass() );
 	
-    //  Объ�?вление лек�?ем
+    //  Объ�?вление лек�?ем
     final int NONE = 0;         //  FAIL
-    final int DELIMITER = 1;    //  Разделитель(+-*/^=, ")", "(" )
-    final int FUNCTION = 2;     //  Переменна�?
-    final int NUMBER = 3;       //  Чи�?ло
+    final int DELIMITER = 1;    //  Разделитель(+-=, ")", "(" )
+    final int FUNCTION = 2;     //  Переменна�?
+    final int NUMBER = 3;       //  Чи�?ло
     
-    //  Объ�?вление кон�?тант �?интак�?иче�?ких ошибок
-    final int SYNTAXERROR = 0;  //  Синтак�?иче�?ка�? ошибка (10 + 5 6 / 1)
-    final int UNBALPARENS = 1;  //  �?е�?овпадение количе�?тва открытых и закрытых �?кобок
-    final int NOEXP = 2;        //  От�?ут�?твует выражение при запу�?ке анализатора
+    //  Объ�?вление кон�?тант �?интак�?иче�?ких ошибок
+    final int SYNTAXERROR = 0;  //  Синтак�?иче�?ка�? ошибка (10 + 5 6 / 1)
+    final int UNBALPARENS = 1;  //  �?е�?овпадение количе�?тва открытых и закрытых �?кобок
+    final int NOEXP = 2;        //  От�?ут�?твует выражение при запу�?ке анализатора
     final int UNKNOWNFUNC = 5;
     
-    //  Лек�?ема, определ�?юща�? конец выражени�?
-    final String EOF = "\0";
-    
-    private String exp;     //  С�?ылка на �?троку �? выражением
-    private int explds;     //  Текущий индек�? в выражении
-    private String token;   //  Сохранение текущей лек�?емы
-    private int tokType;    //  Сохранение типа лек�?емы
+    private String exp;     //  С�?ылка на �?троку �? выражением
+    private int explds;     //  Текущий индек�? в выражении
+    private String token;   //  Сохранение текущей лек�?емы
+    private int tokType;    //  Сохранение типа лек�?емы
     
     
     public String toString() {
@@ -32,22 +29,20 @@ public class Parser {
                 token.toString(), tokType);
     }
     
-    //  Получить �?ледующую лек�?ему
+    //  Получить �?ледующую лек�?ему
     private void getToken() {
         tokType = NONE;
         token = "";
         
-        //  Проверка на окончание выражени�?
+        //  Проверка на окончание выражени�?
         if(explds == exp.length()){
-            token = EOF;
             return;
         }
-        //  Проверка на пробелы, е�?ли е�?ть пробел - игнорируем его.
+        //  Проверка на пробелы, е�?ли е�?ть пробел - игнорируем его.
         while(explds < exp.length() && Character.isWhitespace(exp.charAt(explds))) 
             ++ explds;
-        //  Проверка на окончание выражени�?
+        //  Проверка на окончание выражени�?
         if(explds == exp.length()){
-            token = EOF;
             return;
         }
         if(isDelim(exp.charAt(explds))){
@@ -74,7 +69,6 @@ public class Parser {
             tokType = NUMBER;
         }
         else {
-            token = EOF;
             return;
         }
     }
@@ -94,44 +88,47 @@ public class Parser {
         explds = 0;
         getToken();
         
-        if(token.equals(EOF))
-            handleErr(NOEXP);   //  �?ет выражени�?
+        if(token.isEmpty()) {
+            handleErr(NOEXP);   //  �?ет выражени�?
+        	}
  
-        //  �?нализ и вычи�?ление выражени�?
+        //  �?нализ и вычи�?ление выражени�?
         result = evalExp2();
         
-        if(!token.equals(EOF))
+        if(!token.isEmpty()) {
             handleErr(SYNTAXERROR);
-        
+        }
         logger.logInfo(expstr + " = " + result);
 
         return result;
     }
     
-    //  Сложить или вычи�?лить два терма
+    //  Сложить или вычи�?лить два терма
     private Currency evalExp2() throws ParserException, CurrencyException {
         
         char op;
         Currency result;
         Currency partialResult;
         result = evalExp4();
-        while((op = token.charAt(0)) == '+' || 
-                op == '-'){
-            getToken();
-            partialResult = evalExp4();
-            switch(op){
-                case '-':
-                	result = CurrencyUtils.Subtract(result, partialResult);
-                    break;
-                case '+':
-                	result = CurrencyUtils.Add(result, partialResult);
-                    break;
+        if(!token.isEmpty()) {
+        	while((op = token.charAt(0)) == '+' || 
+        			op == '-'){
+        		getToken();
+        		partialResult = evalExp4();
+        		switch(op){
+        			case '-':
+        				result = CurrencyUtils.Subtract(result, partialResult);
+        				break;
+        			case '+':
+        				result = CurrencyUtils.Add(result, partialResult);
+        				break;
+        		}
             }
         }
         return result;
     }
     
-    //  Выполнить возведение в �?тепень
+    //  Выполнить возведение в �?тепень
     private Currency evalExp4() throws ParserException, CurrencyException {
         
     	Currency result;
@@ -143,10 +140,8 @@ public class Parser {
             partialResult = evalExp6();
             switch(funcName) {
             	case "toDollar":
-//            		System.out.println("Ok! " + funcName + "(" + partialResult + ")");
             		return CurrencyUtils.convert(partialResult, "$");
             	case "toEuro":
-//            		System.out.println("Ok! " + funcName + "(" + partialResult + ")");
             		return CurrencyUtils.convert(partialResult, "eur");
             	default:
             		handleErr(SYNTAXERROR);
@@ -176,7 +171,7 @@ public class Parser {
         return result;
     }
     
-    //  Обработать выражение в �?кобках
+    //  Обработать выражение в �?кобках
     private Currency evalExp6() throws ParserException, CurrencyException {
     	Currency result;
         
@@ -192,7 +187,7 @@ public class Parser {
         return result;
     }
     
-    //  Получить значение чи�?ла
+    //  Получить значение чи�?ла
     private Currency atom()   throws ParserException, CurrencyException {
         
     	Currency result = null;
