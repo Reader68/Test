@@ -1,7 +1,11 @@
 package currency;
 
+import logger.Logger;
+
 public class Parser {
-    
+	
+	protected Logger logger  = new Logger( this.getClass() );
+	
     //  Объявление лексем
     final int NONE = 0;         //  FAIL
     final int DELIMITER = 1;    //  Разделитель(+-*/^=, ")", "(" )
@@ -12,7 +16,6 @@ public class Parser {
     final int SYNTAXERROR = 0;  //  Синтаксическая ошибка (10 + 5 6 / 1)
     final int UNBALPARENS = 1;  //  Несовпадение количества открытых и закрытых скобок
     final int NOEXP = 2;        //  Отсутствует выражение при запуске анализатора
-    final int DIVBYZERO = 3;    //  Ошибка деления на ноль
     final int UNKNOWNFUNC = 5;
     
     //  Лексема, определяющая конец выражения
@@ -77,7 +80,7 @@ public class Parser {
     }
  
     private boolean isDelim(char charAt) {
-        if((" +-/*%^=()".indexOf(charAt)) != -1)
+        if((" +-=()".indexOf(charAt)) != -1)
             return true;
         return false;
     }
@@ -100,6 +103,8 @@ public class Parser {
         if(!token.equals(EOF))
             handleErr(SYNTAXERROR);
         
+        logger.logInfo(expstr + " = " + result);
+
         return result;
     }
     
@@ -138,10 +143,10 @@ public class Parser {
             partialResult = evalExp6();
             switch(funcName) {
             	case "toDollar":
-            		System.out.println("Ok! " + funcName + "(" + partialResult + ")");
+//            		System.out.println("Ok! " + funcName + "(" + partialResult + ")");
             		return CurrencyUtils.convert(partialResult, "$");
             	case "toEuro":
-            		System.out.println("Ok! " + funcName + "(" + partialResult + ")");
+//            		System.out.println("Ok! " + funcName + "(" + partialResult + ")");
             		return CurrencyUtils.convert(partialResult, "eur");
             	default:
             		handleErr(SYNTAXERROR);
@@ -214,8 +219,11 @@ public class Parser {
                     handleErr(SYNTAXERROR);
                 } 
                 catch (CurrencyException exc) {
-                	throw new ParserException(exc.toString());
+                	throw new ParserException(exc.getLocalizedMessage());
 				}
+                catch(Exception e) {
+                	throw new ParserException("Error parsing of: " + token);
+                }
                 getToken();
     
             break;

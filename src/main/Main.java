@@ -5,8 +5,10 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 
 import currency.CurrencyException;
+import currency.CurrencyUtils;
 import currency.Parser;
 import currency.ParserException;
+import currency.RateTableEcseption;
 
 public class Main {
 
@@ -16,6 +18,13 @@ public class Main {
 		BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
 		Parser p = new Parser();
 		
+		try {
+			CurrencyUtils.reLoadRates("rates.csv");
+		}	
+		catch (RateTableEcseption e) {
+			System.out.println(e.getLocalizedMessage());
+		}
+		
 		for(;;) {
 			System.out.println("Input expression: ");
 			expr = br.readLine();
@@ -24,14 +33,13 @@ public class Main {
 				System.out.println("Result: " + p.evaluate(expr) + "\n");
 			}
 			catch (ParserException ex) {
-				System.out.println(ex);
+//				System.out.println(ex.getLocalizedMessage());
 				ex.printStackTrace();
 			}
 			catch (CurrencyException ex) {
-				System.out.println(ex);
+//				System.out.println(ex.getLocalizedMessage());
 				ex.printStackTrace();
 			}
 		}
 	}
-
 }
