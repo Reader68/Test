@@ -1,4 +1,4 @@
-package currency;
+package calc;
 
 public class Currency {
 	private String m_type;
@@ -37,22 +37,6 @@ public class Currency {
 	public String getType() {
 		return m_type;
 	}
-	
-//	public Currency Add(Currency op) throws CurrencyException {
-//		if(!m_type.equals(op.getType()))
-//			throw new CurrencyException("Addition: different currency types!");
-//		m_value += op.getValue();
-//
-//		return this;
-//	}
-//	
-//	public Currency Subtract(Currency op) throws CurrencyException {
-//		if(!m_type.equals(op.getType()))
-//			throw new CurrencyException("Addition: different currency types!");
-//		m_value -= op.getValue();
-//
-//		return this;
-//	}
 	
 	@Override
 	public String toString(){

@@ -4,11 +4,11 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 
-import currency.CurrencyException;
-import currency.CurrencyUtils;
-import currency.Parser;
-import currency.ParserException;
-import currency.RateTableEcseption;
+import calc.CurrencyException;
+import calc.CurrencyUtils;
+import calc.Parser;
+import calc.ParserException;
+import calc.RateTableEcseption;
 
 public class Main {
 

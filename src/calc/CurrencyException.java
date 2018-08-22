@@ -1,4 +1,4 @@
-package currency;
+package calc;
 
 public class CurrencyException extends Exception {
 	private static final long serialVersionUID = 2L;

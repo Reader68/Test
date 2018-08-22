@@ -1,4 +1,4 @@
-package currency;
+package calc;
 
 public class CurrencyUtils {
 	private static RateTable m_rt = new RateTable().loadRates();

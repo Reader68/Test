@@ -1,4 +1,4 @@
-package currency;
+package calc;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -26,14 +26,16 @@ public class RateTable {
 		
 		try(BufferedReader br = Files.newBufferedReader(Paths.get(fileName))) {
 			while((line = br.readLine()) != null) {
-				params = line.split(",");
+				params = line.split(":");
 				putRate(params[0], params[1], Double.parseDouble(params[2]));
 			}
 		}
 		catch(NumberFormatException e) {
-			throw new RateTableEcseption("Error parsing " + params[2] + ". " + e.getLocalizedMessage() );
+			throw new RateTableEcseption("Error parsing " + params[2] + ".\n"
+					+ e.getLocalizedMessage() + "\nRates table loaded uncompletely." );
 		}
 		catch (Exception e) {
+			
 			this.clearTable().loadRates();
 			throw new RateTableEcseption("Error reading rates file " + fileName + ". Default rates were loaded."  );
 		}
